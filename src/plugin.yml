@@ -1,0 +1,46 @@
+name: TraxFight-PotPvP
+version: 2.0
+author: Obey
+main: de.obey.traxfight.TraxFight
+commands:
+  build:
+  chatclear:
+    aliases: [cc]
+  clear:
+  day:
+  feed:
+  fix:
+    aliases: [repair]
+  fly:
+  gamemode:
+    aliases: [gm]
+  globalmute:
+  heal:
+  invsee:
+  liga:
+    aliases: [elo]
+  more:
+  night:
+  ping:
+  playtime:
+    aliases: [pt]
+  privatechatclear:
+    aliases: [pcc]
+  rang:
+  ranking:
+  realreload:
+    aliases: [rr]
+  rename:
+  serverstats:
+    aliases: [ss]
+  set:
+  skull:
+    aliases: [s]
+  spawn:
+  stack:
+  stats:
+  user:
+  vanish:
+    aliases: [v]
+  whitelist:
+    aliases: [wl]
