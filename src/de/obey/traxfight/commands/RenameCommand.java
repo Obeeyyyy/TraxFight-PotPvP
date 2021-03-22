@@ -10,6 +10,7 @@ package de.obey.traxfight.commands;
 
 import de.obey.traxfight.TraxFight;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,7 +29,7 @@ public class RenameCommand implements CommandExecutor {
             if(!traxFight.hasPermission(player, "rename", true))
                 return false;
 
-            if(player.getItemInHand() == null){
+            if(player.getItemInHand() == null || player.getItemInHand().getType() == Material.AIR){
                 player.sendMessage(traxFight.getPrefix() + "Du musst ein  Item in der Hand halten.");
                 return false;
             }
@@ -52,7 +53,7 @@ public class RenameCommand implements CommandExecutor {
                 name = " " + name;
             }
 
-            ItemMeta itemMeta = player.getItemInHand().getItemMeta();
+            final ItemMeta itemMeta = player.getItemInHand().getItemMeta();
             itemMeta.setDisplayName(name);
             player.getItemInHand().setItemMeta(itemMeta);
 

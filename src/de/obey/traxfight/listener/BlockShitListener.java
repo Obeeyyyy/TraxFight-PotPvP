@@ -16,19 +16,18 @@ import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.lang.management.GarbageCollectorMXBean;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,15 +37,73 @@ public class BlockShitListener implements Listener {
     private final Map<Player, Long> lastCommand = new HashMap<>();
 
     @EventHandler
+    public void onInteract(PlayerInteractEvent event){
+        final Player player = event.getPlayer();
+
+        if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
+            if(player.getItemInHand() == null || player.getItemInHand().getType() == Material.AIR)
+                return;
+
+            final Material material = player.getItemInHand().getType();
+
+            if(material == Material.GOLDEN_APPLE && player.getItemInHand().getData().getData() == 1){
+                event.setCancelled(true);
+                player.sendMessage(traxFight.getPrefix() + "Opäpfel sind auf dem Server deaktiviert.");
+                return;
+            }
+
+            if(material == Material.POTION){
+                final byte data = player.getItemInHand().getData().getData();
+
+                player.sendMessage(data + "");
+
+                if(data == 68 ||
+                        data == 4 ||
+                        data == 42 ||
+                        data == 36 ||
+                        data == 74 ||
+                        data == 76 ||
+                        data == 44 ||
+                        data == 72 ||
+                        data == 40){
+
+                    event.setCancelled(true);
+                    player.sendMessage(traxFight.getPrefix() + "Dieser Trank ist auf dem Server deaktiviert.");
+
+                    return;
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onBreak(BlockBreakEvent event){
-        if(!BuildCommand.build.contains(event.getPlayer()))
-            event.setCancelled(true);
+        final Location spawn = traxFight.getLocationManager().getLocation("spawn");
+        final Location playerLocation = event.getPlayer().getLocation();
+
+        if(spawn == null)
+            return;
+
+        if(playerLocation.getWorld() == spawn.getWorld() && playerLocation.distance(spawn) <= 400){
+            if(!BuildCommand.build.contains(event.getPlayer()))
+                event.setCancelled(true);
+            return;
+        }
     }
 
     @EventHandler
     public void onPlace(BlockPlaceEvent event){
-        if(!BuildCommand.build.contains(event.getPlayer()))
-            event.setCancelled(true);
+        final Location spawn = traxFight.getLocationManager().getLocation("spawn");
+        final Location playerLocation = event.getPlayer().getLocation();
+
+        if(spawn == null)
+            return;
+
+        if(playerLocation.getWorld() == spawn.getWorld() && playerLocation.distance(spawn) <= 400){
+            if(!BuildCommand.build.contains(event.getPlayer()))
+                event.setCancelled(true);
+            return;
+        }
     }
 
     @EventHandler
@@ -106,12 +163,12 @@ public class BlockShitListener implements Listener {
                             PacketPlayInClientCommand.EnumClientCommand.PERFORM_RESPAWN);
                     ((CraftPlayer) player).getHandle().playerConnection.a(packet);
 
-                    traxFight.getLocationManager().teleportToSpawnInstant(player);
+                    traxFight.getLocationManager().teleportToLocationInstant(player, traxFight.getLocationManager().getLocation("spawn"));
                     traxFight.getKitManager().equipRespawnKit(player);
 
                 } catch (NullPointerException es) {}
             }
-        }.runTaskLater(traxFight, 10);
+        }.runTaskLater(traxFight, 30);
     }
 
     @EventHandler
@@ -124,7 +181,8 @@ public class BlockShitListener implements Listener {
 
     @EventHandler
     public void Weather(WeatherChangeEvent e) {
-        boolean rain = e.toWeatherState();
+        final boolean rain = e.toWeatherState();
+
         if (rain)
             e.setCancelled(true);
     }
@@ -149,7 +207,7 @@ public class BlockShitListener implements Listener {
         if(traxFight.hasPermission(player, "team", false))
             return;
 
-        event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "\n§8» §a§lTraxFight§8 «\n\n§7Du stehts nicht auf der Whitelist.\n\n§a§lDiscord\n§fdiscord.TraxFight.net");
+        event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "\n§8» §a§lTraxFight§8 «\n\n§7Du stehst nicht auf der Whitelist.\n\n§a§lDiscord\n§fdiscord.TraxFight.net");
 
         Bukkit.broadcastMessage(traxFight.getPrefix() + player.getName() + " hat versucht den Server zu betreten");
     }
@@ -166,15 +224,8 @@ public class BlockShitListener implements Listener {
     public void onPreCommand(PlayerCommandPreprocessEvent e){
         final Player player = e.getPlayer();
 
-        if(traxFight.getCombatManager().isInCombat(player)) {
-            if (traxFight.getCombatManager().getBlockedCommand().contains(e.getMessage().toLowerCase())) {
-                e.setCancelled(true);
-                player.sendMessage(traxFight.getPrefix() + "Dieser Command ist im Kampf verboten.");
-            }
-        }
-
         if(lastCommand.containsKey(player)){
-            if(System.currentTimeMillis() - lastCommand.get(player) <= 500){
+            if(System.currentTimeMillis() - lastCommand.get(player) <= 2000){
                 e.setCancelled(true);
                 player.sendMessage(traxFight.getPrefix() + "Bitte warte einen Moment.");
                 return;
@@ -183,10 +234,41 @@ public class BlockShitListener implements Listener {
             lastCommand.put(player, System.currentTimeMillis());
         }
 
-        if (Bukkit.getServer().getHelpMap().getHelpTopic(e.getMessage().split(" ")[0]) == null) {
+        if(traxFight.getCombatManager().isInCombat(player)) {
+            if (traxFight.getCombatManager().getBlockedCommand().contains(e.getMessage().toLowerCase())) {
+                e.setCancelled(true);
+                player.sendMessage(traxFight.getPrefix() + "Dieser Command ist im Kampf verboten.");
+            }
+        }
+
+        final String command = e.getMessage().split(" ")[0];
+
+        if (Bukkit.getServer().getHelpMap().getHelpTopic(command) == null) {
             e.setCancelled(true);
-            player.sendMessage(traxFight.getPrefix() + "Der Befehl §8'§a" + e.getMessage().split(" ")[0] + "§8'§7 existiert nicht§8.");
+            player.sendMessage(traxFight.getPrefix() + "Der Befehl §8'§a" + command + "§8'§7 existiert nicht§8.");
             player.playSound(player.getLocation(), Sound.ZOMBIE_WOODBREAK, 0.5f, 0.5f);
+
+        }
+
+        if(command.equalsIgnoreCase("/pl") ||
+                command.equalsIgnoreCase("/?") ||
+                command.equalsIgnoreCase("/help") ||
+                command.equalsIgnoreCase("/icanhasbukkit") ||
+                command.equalsIgnoreCase("/pex") ||
+                command.equalsIgnoreCase("//permissionsex") ||
+                command.equalsIgnoreCase("/we") ||
+                command.equalsIgnoreCase("/worldguard") ||
+                command.equalsIgnoreCase("/wg") ||
+                command.equalsIgnoreCase("/worldedit") ||
+                command.equalsIgnoreCase("/version") ||
+                command.equalsIgnoreCase("/about") ||
+                command.equalsIgnoreCase("/plugins")){
+
+            if(!traxFight.hasPermission(player, "*", false)){
+                e.setCancelled(true);
+                player.sendMessage(traxFight.getPrefix() + "Wenn du etwas über den Server wissen möchtest kannst du gerne im Discord nachfragen.");
+                return;
+            }
 
         }
     }
@@ -218,7 +300,11 @@ public class BlockShitListener implements Listener {
 
     @EventHandler
     public void onHunger(FoodLevelChangeEvent event){
-        Player player = (Player) event.getEntity();
-        player.setFoodLevel(20);
+
+        if(!(event.getEntity() instanceof Player))
+            return;
+
+        if(event.getFoodLevel() < 20)
+            event.setFoodLevel(20);
     }
 }

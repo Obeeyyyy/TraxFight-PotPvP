@@ -15,8 +15,6 @@ import org.bukkit.command.CommandSender;
 
 public class PrivateChatclearCommand implements CommandExecutor {
 
-    private final TraxFight traxFight = TraxFight.getInstance();
-
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
 

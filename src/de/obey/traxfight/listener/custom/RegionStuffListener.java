@@ -1,4 +1,4 @@
-package de.obey.traxfight.listener;
+package de.obey.traxfight.listener.custom;
 
 /*
 
@@ -22,18 +22,24 @@ public class RegionStuffListener implements Listener {
 
     @EventHandler
     public void on(RegionEnterEvent event){
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         if(event.getRegion().getId().equalsIgnoreCase("spawn")){
             if(traxFight.getCombatManager().isInCombat(player)){
-                Vector playerVector = player.getLocation().toVector();
-                Vector worldSpawnVector = player.getWorld().getSpawnLocation().toVector();
-                Vector vector = worldSpawnVector.clone().subtract(playerVector).multiply(-2 / worldSpawnVector.distance(playerVector)).setY(0.7);
+                final Vector playerVector = player.getLocation().toVector();
+                final Vector worldSpawnVector = player.getWorld().getSpawnLocation().toVector();
+                final Vector vector = worldSpawnVector.clone().subtract(playerVector).multiply(-2 / worldSpawnVector.distance(playerVector)).setY(0.7);
 
                 player.setVelocity(vector);
-
                 player.getWorld().playSound(player.getLocation(), Sound.FIZZ, 1, 1);
             }
+            return;
+        }
+
+        if(event.getRegion().getId().equalsIgnoreCase("casino")){
+            player.sendTitle("§6§lCASINO", "§7Willkommen im Casino");
+            player.playSound(player.getLocation(), Sound.DOOR_OPEN, 0.4f, 0.4f);
+            return;
         }
 
     }

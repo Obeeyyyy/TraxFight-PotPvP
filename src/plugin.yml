@@ -3,9 +3,15 @@ version: 2.0
 author: Obey
 main: de.obey.traxfight.TraxFight
 commands:
+  bounty:
+    aliases: [kopfgeld]
+  broadcast:
+    aliases: [bc]
   build:
   chatclear:
     aliases: [cc]
+  clan:
+    alises: [gilde]
   clear:
   day:
   feed:
@@ -17,10 +23,18 @@ commands:
   globalmute:
   heal:
   invsee:
+  kick:
+  kit:
+  kitreset:
   liga:
     aliases: [elo]
+  message:
+    aliases: [msg]
+  respond:
+    aliases: [r]
   more:
   night:
+  pay:
   ping:
   playtime:
     aliases: [pt]
@@ -34,13 +48,22 @@ commands:
   serverstats:
     aliases: [ss]
   set:
+  settabsuffix:
   skull:
     aliases: [s]
   spawn:
   stack:
   stats:
+  teamchat:
+    aliases: [tc]
+  team:
+  teleportall:
+    aliases: [tpall]
+  trash:
   user:
   vanish:
     aliases: [v]
+  warp:
+    aliases: [warps]
   whitelist:
     aliases: [wl]

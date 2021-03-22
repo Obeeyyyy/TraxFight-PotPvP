@@ -35,12 +35,13 @@ public class FixCommand implements CommandExecutor {
             try {
                 int i = 0;
                 while (i < 36) {
-                    ItemStack is = player.getInventory().getItem(i);
+                    final ItemStack is = player.getInventory().getItem(i);
+                    final String type = is.getType().name();
                     if (is != null && !is.getType().isBlock() && is.getType() != Material.INK_SACK
                             && is.getType() != Material.GOLDEN_APPLE && is.getType() != Material.AIR
                             && is.getType() != Material.POTION && is.getType() != Material.SKULL_ITEM
                             && is.getType() != Material.MONSTER_EGG && is.getType() != Material.EXP_BOTTLE
-                            && is.getType() != Material.DIAMOND_PICKAXE) {
+                            && !type.contains("PICKAXE") && !type.contains("AXE") && !type.contains("HOE") && !type.contains("SPADE")) {
                         is.setDurability((short) 0);
                         ++count;
                     }

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class BuildCommand implements CommandExecutor {
 
     private final TraxFight traxFight = TraxFight.getInstance();
-    public static ArrayList<Player> build = new ArrayList<Player>();
+    public static final ArrayList<Player> build = new ArrayList<Player>();
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
@@ -48,10 +48,8 @@ public class BuildCommand implements CommandExecutor {
             if(args.length == 1){
                 final Player target = Bukkit.getPlayer(args[0]);
 
-                if(target == null){
-                    player.sendMessage(traxFight.getPrefix() + "Der Spieler " + args[0] + " ist nicht Online.");
+                if(!traxFight.isOnline(player, target, args[0]))
                     return false;
-                }
 
                 if(!build.contains(target)){
                     build.add(target);

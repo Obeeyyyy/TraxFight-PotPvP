@@ -9,8 +9,8 @@ package de.obey.traxfight.commands;
 */
 
 import de.obey.traxfight.TraxFight;
-import de.obey.traxfight.usermanager.User;
-import de.obey.traxfight.usermanager.UserManager;
+import de.obey.traxfight.backend.User;
+import de.obey.traxfight.backend.UserManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -58,7 +58,9 @@ public class UserCommand implements CommandExecutor {
         if(args[0].equalsIgnoreCase("save")){
             user.saveData();
             sender.sendMessage(traxFight.getPrefix() + "User (" + target.getName() + ") gespeichert.");
+
         } else if (args[0].equalsIgnoreCase("reload")) {
+            user.setClan(null);
             user.loadData();
             sender.sendMessage(traxFight.getPrefix() + "User (" + target.getName() + ") neugeladen.");
         }

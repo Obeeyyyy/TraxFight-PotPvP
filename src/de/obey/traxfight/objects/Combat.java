@@ -53,7 +53,7 @@ public class Combat {
             @Override
             public void run() {
                 cooldown--;
-                durationString = MathUtil.getRemainingTimeFromMillis(System.currentTimeMillis()-startMillis);
+                durationString = MathUtil.getMinutesFromMillis(System.currentTimeMillis()-startMillis);
 
                 traxFight.getScoreboarder().updateScoreboard(player);
 
@@ -91,8 +91,6 @@ public class Combat {
                 team.sendMessage(prefix + "§8'§e§o" + player.getName() + "§8'§7 hat sich in einem Kampf ausgeloggt§8.");
             }
         }
-
-        end();
     }
 
     public String getDurationString() {

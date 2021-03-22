@@ -22,7 +22,7 @@ public class RankingCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String s, String[] args) {
         if(sender instanceof Player){
-            Player player =(Player) sender;
+            final Player player =(Player) sender;
 
             if(args.length != 0){
                 player.sendMessage(traxFight.getPrefix() + "/ranking");
@@ -32,7 +32,7 @@ public class RankingCommand implements CommandExecutor {
             try {
                 player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
                 player.openInventory(traxFight.getRankingManager().getInventoryMap().get("kills"));
-            }catch (NullPointerException ex){
+            }catch (NullPointerException exception){
                 player.sendMessage(traxFight.getPrefix() + "Bitte warte einen Moment.");
             }
         }

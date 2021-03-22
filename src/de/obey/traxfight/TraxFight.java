@@ -9,9 +9,12 @@ package de.obey.traxfight;
 */
 
 import de.obey.traxfight.manager.*;
-import de.obey.traxfight.usermanager.RangManager;
-import de.obey.traxfight.usermanager.UserManager;
+import de.obey.traxfight.backend.ClanManager;
+import de.obey.traxfight.backend.RangManager;
+import de.obey.traxfight.backend.User;
+import de.obey.traxfight.backend.UserManager;
 import de.obey.traxfight.utils.Scoreboarder;
+import de.obey.utils.MathUtil;
 import de.obey.utils.SimpleMySQL;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -30,6 +33,7 @@ public class TraxFight extends JavaPlugin {
 
     private UserManager userManager;
     private RangManager rangManager;
+    private ClanManager clanManager;
     private RankingManager rankingManager;
     private LocationManager locationManager;
     private LigaManager ligaManager;
@@ -37,6 +41,8 @@ public class TraxFight extends JavaPlugin {
     private CombatManager combatManager;
     private KitManager kitManager;
     private KillFarmManager killFarmManager;
+    private WarpManager warpManager;
+    private TeamManager teamManager;
 
     public boolean restart = true;
 
@@ -48,14 +54,17 @@ public class TraxFight extends JavaPlugin {
 
         loader = new Loader();
 
-        userManager = new UserManager();
+        userManager = new UserManager(getDataFolder().getPath());
         rangManager = new RangManager();
+        clanManager = new ClanManager();
         rankingManager = new RankingManager();
         ligaManager = new LigaManager();
         scoreboarder = new Scoreboarder();
         combatManager = new CombatManager();
         kitManager = new KitManager();
         killFarmManager = new KillFarmManager();
+        warpManager = new WarpManager();
+        teamManager = new TeamManager();
 
         loader.loadMysql();
         rangManager.createFolder(getDataFolder());
@@ -70,6 +79,7 @@ public class TraxFight extends JavaPlugin {
 
                 locationManager.loadLocations();
                 rangManager.setup(getDataFolder());
+                teamManager.updateInventories();
 
                 restart = false;
             }
@@ -85,6 +95,11 @@ public class TraxFight extends JavaPlugin {
 
         if(userManager != null)
             userManager.saveAllUsers();
+
+        if(clanManager != null)
+            clanManager.saveAllClans();
+
+        executorService.shutdownNow();
     }
 
     public boolean hasPermission(Player player, String permission, boolean sendMessage){
@@ -95,6 +110,28 @@ public class TraxFight extends JavaPlugin {
             }
             return false;
         }
+        return true;
+    }
+
+    public boolean isOnline(Player player, Player target, String name){
+        if(target == null || !target.isOnline()){
+            player.sendMessage(getPrefix() + name + " ist nicht Online.");
+            player.playSound(player.getLocation(), Sound.EXPLODE, 0.4f, 0.4f);
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean hasEnoughtLong(User user, String what, long amount){
+        long hasAmount = user.getLong(what);
+
+        if(hasAmount < amount){
+            user.getPlayer().sendMessage(getPrefix() + "Du hast nicht genug Münzen. §8(§c§o-" + MathUtil.getLongWithDots(amount-hasAmount) + "§8)");
+            user.getPlayer().playSound(user.getPlayer().getLocation(), Sound.EXPLODE, 0.4f, 0.4f);
+            return false;
+        }
+
         return true;
     }
 
@@ -126,6 +163,10 @@ public class TraxFight extends JavaPlugin {
         return rangManager;
     }
 
+    public ClanManager getClanManager() {
+        return clanManager;
+    }
+
     public RankingManager getRankingManager() {
         return rankingManager;
     }
@@ -152,6 +193,14 @@ public class TraxFight extends JavaPlugin {
 
     public KillFarmManager getKillFarmManager() {
         return killFarmManager;
+    }
+
+    public WarpManager getWarpManager(){
+        return warpManager;
+    }
+
+    public TeamManager getTeamManager() {
+        return teamManager;
     }
 
     public void setSimpleMySQL(SimpleMySQL simpleMySQL) {

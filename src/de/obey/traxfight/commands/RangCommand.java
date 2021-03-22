@@ -9,7 +9,7 @@ package de.obey.traxfight.commands;
 */
 
 import de.obey.traxfight.TraxFight;
-import de.obey.traxfight.usermanager.Rang;
+import de.obey.traxfight.backend.Rang;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,10 +36,8 @@ public class RangCommand implements CommandExecutor {
 
             final Player target = Bukkit.getPlayer(args[0]);
 
-            if(target == null || !target.isOnline()){
-                player.sendMessage(traxFight.getPrefix() + "Der Spieler " + args[0] + " ist nicht Online.");
+            if(!traxFight.isOnline(player, target, args[0]))
                 return false;
-            }
 
             final Rang rang = traxFight.getRangManager().getRangMap().get(args[1]);
 
@@ -54,7 +52,6 @@ public class RangCommand implements CommandExecutor {
             target.getMetadata(traxFight.getPrefix() + "Du hast den " + args[1] + " Rang erhalten.");
 
             traxFight.getUserManager().getUserFromPlayer(target).setRang(rang);
-
             traxFight.getScoreboarder().updateAll();
         }
         return false;

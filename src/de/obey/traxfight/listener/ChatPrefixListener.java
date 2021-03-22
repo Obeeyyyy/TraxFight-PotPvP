@@ -9,8 +9,8 @@ package de.obey.traxfight.listener;
 */
 
 import de.obey.traxfight.TraxFight;
-import de.obey.traxfight.usermanager.User;
-import de.obey.traxfight.usermanager.UserManager;
+import de.obey.traxfight.backend.User;
+import de.obey.traxfight.backend.UserManager;
 import de.obey.traxfight.utils.Bools;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,28 +20,49 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class ChatPrefixListener implements Listener {
 
-    private TraxFight traxFight = TraxFight.getInstance();
+    private final TraxFight traxFight = TraxFight.getInstance();
     private UserManager userManager;
+
+    private final Map<UUID, Long> lastmessage = new HashMap<>();
 
     @EventHandler
     public void on(AsyncPlayerChatEvent event){
         if(userManager == null)
             userManager = traxFight.getUserManager();
 
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         event.setCancelled(true);
 
-        User user = userManager.getUserFromPlayer(player);
+        final User user = userManager.getUserFromPlayer(player);
+
+        if(user == null || user.getRang() == null) {
+            player.sendMessage(traxFight.getPrefix() + "Bitte warte bis deine Statistiken geladen wurden.");
+            return;
+        }
 
         String message = event.getMessage();
+
+        if(lastmessage.containsKey(player.getUniqueId())){
+            if(System.currentTimeMillis() - lastmessage.get(player.getUniqueId()) <= 800){
+                player.sendMessage(traxFight.getPrefix() + "Bitte warte einen Moment.");
+                return;
+            }
+        }
 
         if(player.hasPermission("traxfight.chatcolor") || player.hasPermission("traxfight.team"))
             message = ChatColor.translateAlternateColorCodes('&', message);
 
         String format = user.getRang().getChatPrefix() + player.getName() + user.getRang().getChatSuffix() + message;
+
+        if(user.getClan() != null && user.getClan().getString("name") != null)
+            format = user.getRang().getChatPrefix() + "§8*" + user.getClan().getString("clancolor") + user.getClan().getString("tag") + "§8*§7" + player.getName() + user.getRang().getChatSuffix() + message;
 
         if(Bools.globalmute && !traxFight.hasPermission(player, "team", false)) {
             player.sendMessage(traxFight.getPrefix() + "Du kannst während einem Globalmute nicht schreiben.");
@@ -53,7 +74,8 @@ public class ChatPrefixListener implements Listener {
         if(message.equalsIgnoreCase("#save")){
             if(player.hasPermission("*")) {
                 userManager.saveAllUsers();
-                player.sendMessage(traxFight.getPrefix() + "Alle user gespeichert.");
+                traxFight.getClanManager().saveALlClans();
+                player.sendMessage(traxFight.getPrefix() + "Alle user und clans gespeichert.");
                 return;
             }
         }
@@ -62,5 +84,7 @@ public class ChatPrefixListener implements Listener {
 
         for(Player all : Bukkit.getOnlinePlayers())
             all.sendMessage(format);
+
+        lastmessage.put(player.getUniqueId(), System.currentTimeMillis());
     }
 }

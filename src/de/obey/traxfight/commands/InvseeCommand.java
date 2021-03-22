@@ -36,16 +36,18 @@ public class InvseeCommand implements CommandExecutor {
 
             final Player target = Bukkit.getPlayer(args[0]);
 
-            if (target == null) {
-                player.sendMessage(traxFight.getPrefix() + args[0] + " ist nicht Online.");
-                player.playSound(player.getLocation(), Sound.EXPLODE, 0.4f, 0.4f);
+            if(!traxFight.isOnline(player, target, args[0]))
                 return false;
-            }
 
             player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
 
             if(traxFight.hasPermission(player, "*", false)){
                 player.openInventory(target.getInventory());
+                return false;
+            }
+
+            if(player == target){
+                player.sendMessage(traxFight.getPrefix() + "lmao");
                 return false;
             }
 

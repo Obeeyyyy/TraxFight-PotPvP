@@ -9,7 +9,7 @@ package de.obey.traxfight.manager;
 */
 
 import de.obey.traxfight.TraxFight;
-import de.obey.traxfight.usermanager.User;
+import de.obey.traxfight.backend.User;
 import de.obey.utils.InventoryUtil;
 import de.obey.utils.ItemBuilder;
 import de.obey.utils.MathUtil;
@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 public class RankingManager {
@@ -52,8 +53,17 @@ public class RankingManager {
                 updateInventory("killstreak");
                 updateInventory("coins");
                 updateInventory("playtime");
+
+                int message = new Random().nextInt(2);
+
+                if(message == 1)
+                    Bukkit.broadcastMessage(traxFight.getPrefix() + "Bitte sende uns dein Feedback auf unserem Discord ! §8(§7discord.TraxFight.net§8)");
+
+                if(message == 0)
+                    Bukkit.broadcastMessage(traxFight.getPrefix() + "Verkaufe deine Items im Sellshop ! §8(§7/sell§8)");
+
             }
-        }.runTaskTimerAsynchronously(traxFight, 100, 20*60*10);
+        }.runTaskTimerAsynchronously(traxFight, 200, 20*60*10);
     }
 
     private void createInventories(){
@@ -102,11 +112,11 @@ public class RankingManager {
         inventory.setItem(45, bar);
         inventory.setItem(53, bar);
 
-        inventory.setItem(10, new ItemBuilder(Material.DIAMOND_SWORD, 1, (byte) 0).setName("§3Top 10 Kills §7<Anzeigen>").build());
-        inventory.setItem(11, new ItemBuilder(Material.EMERALD, 1, (byte) 0).setName("§3Top 10 Ligapunkte §7<Anzeigen>").build());
-        inventory.setItem(12, new ItemBuilder(Material.SKULL_ITEM, 1, (byte) 3).setTexture("YTg4MzJjMTQ2NmM4NDFjYzc5ZDVmMTAyOTVkNDY0Mjc5OTY3OTc1YTI0NTFjN2E1MzNjNzk5Njg5NzQwOGJlYSJ9fX0=").setName("§3Top 10 Killstreak §7<Anzeigen>").build());
-        inventory.setItem(14, new ItemBuilder(Material.DOUBLE_PLANT, 1, (byte) 0).setName("§3Top 10 Münzen §7<Anzeigen>").build());
-        inventory.setItem(15, new ItemBuilder(Material.WATCH, 1, (byte) 0).setName("§3Top 10 Playtime §7<Anzeigen>").build());
+        inventory.setItem(10, new ItemBuilder(Material.DIAMOND_SWORD, 1, (byte) 0).setName("§7Top 10 §8(§4§lKills§8)").build());
+        inventory.setItem(11, new ItemBuilder(Material.EMERALD, 1, (byte) 0).setName("§7Top 10 §8(§d§lLigapunkte§8)").build());
+        inventory.setItem(12, new ItemBuilder(Material.SKULL_ITEM, 1, (byte) 3).setTexture("YTg4MzJjMTQ2NmM4NDFjYzc5ZDVmMTAyOTVkNDY0Mjc5OTY3OTc1YTI0NTFjN2E1MzNjNzk5Njg5NzQwOGJlYSJ9fX0=").setName("§7Top 10 §8(§9§lKillstreak§8)").build());
+        inventory.setItem(14, new ItemBuilder(Material.DOUBLE_PLANT, 1, (byte) 0).setName("§7Top 10 §8(§6§lMünzen§8)").build());
+        inventory.setItem(15, new ItemBuilder(Material.WATCH, 1, (byte) 0).setName("§7Top 10 §8(§f§lPlaytime§8)").build());
     }
 
     private void updateInventory(String what) {
@@ -115,6 +125,7 @@ public class RankingManager {
             mysql = traxFight.getSimpleMySQL();
 
         //traxFight.getExecutorService().submit(() -> {
+        try {
             if (what.equals("coins")) {
                 final Inventory inventory = inventoryMap.get(what);
                 final HashMap<Integer, Integer> ranking = new HashMap<>();
@@ -143,7 +154,10 @@ public class RankingManager {
                 return;
             }
 
-            if(what.equals("kills")){
+            if (mysql == null)
+                return;
+
+            if (what.equals("kills")) {
                 final Inventory inventory = inventoryMap.get(what);
                 final HashMap<Integer, Integer> ranking = new HashMap<>();
                 final ResultSet resultSet = mysql.getResultSet("SELECT ID FROM userstats ORDER BY KILLS DESC LIMIT 11");
@@ -171,7 +185,7 @@ public class RankingManager {
                 return;
             }
 
-            if(what.equals("lp")){
+            if (what.equals("lp")) {
                 final Inventory inventory = inventoryMap.get(what);
                 final HashMap<Integer, Integer> ranking = new HashMap<>();
                 final ResultSet resultSet = mysql.getResultSet("SELECT ID FROM userstats ORDER BY LIGAPOINTS DESC LIMIT 11");
@@ -199,7 +213,7 @@ public class RankingManager {
                 return;
             }
 
-            if(what.equals("killstreak")){
+            if (what.equals("killstreak")) {
                 final Inventory inventory = inventoryMap.get(what);
                 final HashMap<Integer, Integer> ranking = new HashMap<>();
                 final ResultSet resultSet = mysql.getResultSet("SELECT ID FROM userstats ORDER BY KILLSTREAKREKORD DESC LIMIT 11");
@@ -227,7 +241,7 @@ public class RankingManager {
                 return;
             }
 
-            if(what.equals("playtime")){
+            if (what.equals("playtime")) {
                 final Inventory inventory = inventoryMap.get(what);
                 final HashMap<Integer, Integer> ranking = new HashMap<>();
                 final ResultSet resultSet = mysql.getResultSet("SELECT ID FROM userplaytime ORDER BY DAYS DESC LIMIT 11");
@@ -254,7 +268,16 @@ public class RankingManager {
                 }
                 return;
             }
-        //});
+            //});
+        }catch (NullPointerException exception){
+            new BukkitRunnable(){
+
+                @Override
+                public void run() {
+                    updateInventory(what);
+                }
+            }.runTaskLater(traxFight, 200);
+        }
     }
 
     private ItemStack getPlayerHeadWithData(int id, int rank, String what){
@@ -264,10 +287,10 @@ public class RankingManager {
         if(player == null)
             return null;
 
-        User user = traxFight.getUserManager().getUserFromOfflinePlayer(player);
+        final User user = traxFight.getUserManager().getUserFromOfflinePlayer(player);
 
         try {
-            Thread.sleep(500);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -280,7 +303,7 @@ public class RankingManager {
         if(what.equals("coins")) {
             head = new ItemBuilder(Material.SKULL_ITEM, 1, (byte) 3)
                     .setName("§7" + player.getName() + "§8 (§a#" + rank + "§8)")
-                    .setLore("§7", "§8 »§7 " + MathUtil.getLongWithDots(user.getLong("coins")))
+                    .setLore("§7", "§8  »§6 Informationen§8:", "§8    ×§7 Münzen§8: §e" + MathUtil.getLongWithDots(user.getLong("coins")))
                     .setOwner(player.getName())
                     .build();
         }
@@ -288,15 +311,16 @@ public class RankingManager {
         if(what.equals("kills")) {
             head = new ItemBuilder(Material.SKULL_ITEM, 1, (byte) 3)
                     .setName("§7" + player.getName() + "§8 (§a#" + rank + "§8)")
-                    .setLore("§7", "§8 »§7 " + MathUtil.getLongWithDots(user.getInteger("kills")))
+                    .setLore("§7", "§8  »§6 Informationen§8:", "§8    ×§7 Kills§8: §e" + MathUtil.getLongWithDots(user.getInteger("kills")))
                     .setOwner(player.getName())
                     .build();
         }
 
         if(what.equals("lp")) {
+            final int lp = user.getInteger("ligapoints");
             head = new ItemBuilder(Material.SKULL_ITEM, 1, (byte) 3)
                     .setName("§7" + player.getName() + "§8 (§a#" + rank + "§8)")
-                    .setLore("§7", "§8 »§7 " + MathUtil.getLongWithDots(user.getInteger("ligapoints")))
+                    .setLore("§7", "§8  »§6 Informationen§8:", "§8    ×§7 Ligapunkte§8: §e" + MathUtil.getLongWithDots(lp), "§8    ×§7 Ligarang§8: §r" + traxFight.getLigaManager().getLigaFromPoints(lp).getPrefix())
                     .setOwner(player.getName())
                     .build();
         }
@@ -304,7 +328,7 @@ public class RankingManager {
         if(what.equals("killstreak")) {
             head = new ItemBuilder(Material.SKULL_ITEM, 1, (byte) 3)
                     .setName("§7" + player.getName() + "§8 (§a#" + rank + "§8)")
-                    .setLore("§7", "§8 »§7 " + MathUtil.getLongWithDots(user.getInteger("killstreakrekord")))
+                    .setLore("§7", "§8  »§6 Informationen§8:", "§8    ×§7 Höchste Killstreak§8: §e" + MathUtil.getLongWithDots(user.getInteger("killstreakrekord")))
                     .setOwner(player.getName())
                     .build();
         }
@@ -313,7 +337,7 @@ public class RankingManager {
             if(user.getInteger("days") > 0) {
                 head = new ItemBuilder(Material.SKULL_ITEM, 1, (byte) 3)
                         .setName("§7" + player.getName() + "§8 (§a#" + rank + "§8)")
-                        .setLore("§7", "§8 »§7 " + MathUtil.getLongWithDots(user.getInteger("days")))
+                        .setLore("§7", "§8  »§6 Informationen§8:", "§8    ×§7 Spielzeit§8: §e" + user.getInteger("days") + "D " + user.getInteger("hours") + "H " + user.getInteger("minutes")+ "M " + user.getInteger("seconds") + "S")
                         .setOwner(player.getName())
                         .build();
             }else{

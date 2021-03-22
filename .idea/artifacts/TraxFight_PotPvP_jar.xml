@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="TraxFight-PotPvP:jar">
-    <output-path>$PROJECT_DIR$/../../../MINECRAFT LOCALHOST/Bungeehost/lobby/plugins</output-path>
+    <output-path>$PROJECT_DIR$/../../../../spigot/plugins</output-path>
     <root id="archive" name="TraxFight-PotPvP.jar">
       <element id="module-output" name="TraxFight-PotPvP" />
       <element id="extracted-dir" path="D:/API/TraxFight-Usermanager.jar" path-in-jar="/" />

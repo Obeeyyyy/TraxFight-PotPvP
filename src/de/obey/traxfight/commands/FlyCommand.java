@@ -51,11 +51,8 @@ public class FlyCommand implements CommandExecutor {
 
             final Player target = Bukkit.getPlayer(args[0]);
 
-            if (target == null) {
-                player.sendMessage(traxFight.getPrefix() + args[0] + " ist nicht Online.");
-                player.playSound(player.getLocation(), Sound.EXPLODE, 0.4f, 0.4f);
+            if(!traxFight.isOnline(player, target, args[0]))
                 return false;
-            }
 
             if(target.getAllowFlight()){
                 target.setAllowFlight(false);

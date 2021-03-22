@@ -27,39 +27,40 @@ public class RankingInventoryClickListener implements Listener {
         if(event.getClickedInventory().getTitle() == null)
             return;
 
-        if(event.getClickedInventory().getTitle().startsWith("§a§lRanking"))
+        if(event.getClickedInventory().getTitle().startsWith("§a§lRanking")) {
             event.setCancelled(true);
 
-        Player player = (Player) event.getWhoClicked();
+            final Player player = (Player) event.getWhoClicked();
 
-        if(event.getSlot() == 10){
-            player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
-            player.openInventory(traxFight.getRankingManager().getInventoryMap().get("kills"));
-            return;
-        }
+            if (event.getSlot() == 10) {
+                player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
+                player.openInventory(traxFight.getRankingManager().getInventoryMap().get("kills"));
+                return;
+            }
 
-        if(event.getSlot() == 11){
-            player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
-            player.openInventory(traxFight.getRankingManager().getInventoryMap().get("lp"));
-            return;
-        }
+            if (event.getSlot() == 11) {
+                player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
+                player.openInventory(traxFight.getRankingManager().getInventoryMap().get("lp"));
+                return;
+            }
 
-        if(event.getSlot() == 12){
-            player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
-            player.openInventory(traxFight.getRankingManager().getInventoryMap().get("killstreak"));
-            return;
-        }
+            if (event.getSlot() == 12) {
+                player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
+                player.openInventory(traxFight.getRankingManager().getInventoryMap().get("killstreak"));
+                return;
+            }
 
-        if(event.getSlot() == 14){
-            player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
-            player.openInventory(traxFight.getRankingManager().getInventoryMap().get("coins"));
-            return;
-        }
+            if (event.getSlot() == 14) {
+                player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
+                player.openInventory(traxFight.getRankingManager().getInventoryMap().get("coins"));
+                return;
+            }
 
-        if(event.getSlot() == 15){
-            player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
-            player.openInventory(traxFight.getRankingManager().getInventoryMap().get("playtime"));
-            return;
+            if (event.getSlot() == 15) {
+                player.playSound(player.getLocation(), Sound.CHEST_OPEN, 0.4f, 0.4f);
+                player.openInventory(traxFight.getRankingManager().getInventoryMap().get("playtime"));
+                return;
+            }
         }
     }
 }

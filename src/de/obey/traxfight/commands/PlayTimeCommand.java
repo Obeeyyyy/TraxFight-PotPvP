@@ -9,7 +9,7 @@ package de.obey.traxfight.commands;
 */
 
 import de.obey.traxfight.TraxFight;
-import de.obey.traxfight.usermanager.User;
+import de.obey.traxfight.backend.User;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;

@@ -35,7 +35,7 @@ public class LocationManager {
             simpleFile.createFile();
     }
 
-    public void teleportToSpawn(Player player){
+    public void teleportToLocation(Player player, Location location){
         if(teleporting.contains(player))
             return;
 
@@ -44,10 +44,23 @@ public class LocationManager {
         new BukkitRunnable() {
             int remain = 3;
             int ticks = 0;
-            Location saved = player.getLocation();
+            final Location saved = player.getLocation();
             @Override
             public void run() {
-                Location neu = player.getLocation();
+                final Location neu = player.getLocation();
+
+                remain--;
+                ticks++;
+
+                if(ticks == 4){
+                    player.teleport(location);
+                    player.sendTitle("§a§l✔", "");
+                    player.sendMessage(traxFight.getPrefix() + "§aTeleportation erfolgreich.");
+                    player.playSound(player.getLocation(), Sound.ENDERMAN_TELEPORT, 2, 2);
+                    teleporting.remove(player);
+                    cancel();
+                    return;
+                }
 
                 if(ticks == 0)
                     player.sendMessage(traxFight.getPrefix() + "Starte teleportation.");
@@ -64,20 +77,6 @@ public class LocationManager {
                     return;
                 }
 
-                if(ticks == 4){
-                    player.teleport(getLocation("spawn"));
-                    player.sendMessage(traxFight.getPrefix() + "§aTeleportation erfolgreich.");
-                    player.playSound(player.getLocation(), Sound.ENDERMAN_TELEPORT, 2, 2);
-                    teleporting.remove(player);
-                    cancel();
-                    return;
-                }
-
-                for(Player all : player.getWorld().getPlayers()){
-                    all.playEffect(player.getLocation(), Effect.ENDER_SIGNAL, 5);
-                    all.playSound(player.getLocation(), Sound.NOTE_PLING, 2, 2);
-                }
-
                 String message = "";
 
                 for(int i = 0; i < ticks; i++)
@@ -89,16 +88,15 @@ public class LocationManager {
 
                 player.sendTitle("", message);
 
-                remain--;
-                ticks++;
+                for(Player all : player.getWorld().getPlayers()){
+                    all.playEffect(player.getLocation(), Effect.ENDER_SIGNAL, 5);
+                    all.playSound(player.getLocation(), Sound.NOTE_PLING, 2, 2);
+                }
             }
         }.runTaskTimer(traxFight, 0, 20);
-
     }
 
-    public void teleportToSpawnInstant(Player player){
-        Location location = getLocation("spawn");
-
+    public void teleportToLocationInstant(Player player, Location location){
         if(location == null)
             return;
 
@@ -135,7 +133,6 @@ public class LocationManager {
 
     public void setLocation(String name, Location location){
         locations.put(name, location);
-
         saveLocations();
     }
 

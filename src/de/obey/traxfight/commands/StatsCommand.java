@@ -9,7 +9,8 @@ package de.obey.traxfight.commands;
 */
 
 import de.obey.traxfight.TraxFight;
-import de.obey.traxfight.usermanager.User;
+import de.obey.traxfight.backend.Clan;
+import de.obey.traxfight.backend.User;
 import de.obey.utils.MathUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -87,10 +88,12 @@ public class StatsCommand implements CommandExecutor {
     private void sendStatsMessage(Player player, User user, String name){
         try {
 
-            int id = user.getInteger("id");
+            final int id = user.getInteger("id");
 
             if(id == -111){
-                player.sendMessage("Der Spieler §8'§a" + name + "§8'§7 spielt nicht auf unserem Server.");
+                player.sendMessage("§8§l§m----------------------------------");
+                player.sendMessage("");
+                player.sendMessage(traxFight.getPrefix() + "Der Spieler §8'§a" + name + "§8'§7 spielt nicht auf unserem Server.");
                 player.sendMessage("");
                 player.sendMessage("§8§l§m----------------------------------");
                 player.playSound(player.getLocation(), Sound.PISTON_EXTEND, 0.4f, 0.4f);
@@ -101,6 +104,10 @@ public class StatsCommand implements CommandExecutor {
             player.sendMessage("§8                       §a§lSTATS");
             player.sendMessage("");
             player.sendMessage("§8» §7Name§8:§a " + user.getOfflinePlayer().getName() + " §8┃ » §7ID§8:§a " + id);
+            if(user.getClan() != null && user.getClan().getString("name") != null){
+                final Clan clan = user.getClan();
+                player.sendMessage("§8» §7Clan§8: §f" + clan.getString("name") + " §8(" + clan.getString("clancolor") + clan.getString("tag") + "§8)");
+            }
             player.sendMessage("§8» §7LigaPunkte§8:§a " + MathUtil.getLongWithDots(user.getInteger("ligapoints")) + " §8┃ » §7Liga§8: §r" + traxFight.getLigaManager().getLigaFromPoints(user.getInteger("ligapoints")).getPrefix());
             player.sendMessage("§8» §7Kills§8: §a" + MathUtil.getLongWithDots(user.getInteger("kills")) + " §8┃ » §7Tode§8: §c" + MathUtil.getLongWithDots(user.getInteger("deaths")) + " §8┃ » §7Coins§8: §e" + MathUtil.getLongWithDots(user.getLong("coins")));
             player.sendMessage("§8» §7Killstreak§8: §3" + MathUtil.getLongWithDots(user.getInteger("killstreak")) + " §8┃ » §7Killstreakrekord§8: §3" + MathUtil.getLongWithDots(user.getInteger("killstreakrekord")) + " §8┃ » §7Kopfgeld§8: §e" + MathUtil.getLongWithDots(user.getLong("bounty")));
@@ -109,7 +116,9 @@ public class StatsCommand implements CommandExecutor {
             player.sendMessage("§8§l§m----------------------------------");
 
         }catch (NullPointerException ex){
-            player.sendMessage("Der Spieler §8'§a" + name + "§8'§7 spielt nicht auf unserem Server.");
+            player.sendMessage("§8§l§m----------------------------------");
+            player.sendMessage("");
+            player.sendMessage(traxFight.getPrefix() + "Der Spieler §8'§a" + name + "§8'§7 spielt nicht auf unserem Server.");
             player.sendMessage("");
             player.sendMessage("§8§l§m----------------------------------");
             player.playSound(player.getLocation(), Sound.PISTON_EXTEND, 0.4f, 0.4f);

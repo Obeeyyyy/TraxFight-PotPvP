@@ -9,7 +9,7 @@ package de.obey.traxfight.manager;
 */
 
 import de.obey.traxfight.objects.Liga;
-import de.obey.traxfight.usermanager.User;
+import de.obey.traxfight.backend.User;
 
 import java.util.ArrayList;
 
@@ -18,7 +18,6 @@ public class LigaManager {
     private final ArrayList<Liga> ligen = new ArrayList<>();
 
     public LigaManager(){
-
         ligen.add(Liga.BRONZE4);
         ligen.add(Liga.BRONZE3);
         ligen.add(Liga.BRONZE2);
@@ -35,7 +34,6 @@ public class LigaManager {
         ligen.add(Liga.PLATIN1);
         ligen.add(Liga.MASTER);
         ligen.add(Liga.GRANDMASTER);
-
     }
 
     public Liga getLigaFromPoints(int amount){
@@ -94,8 +92,8 @@ public class LigaManager {
     }
 
     public boolean checkForUprank(User user, int amount){
-        Liga newRank = getLigaFromPoints(user.getInteger("ligapoints") + amount);
-        Liga oldRank = getLigaFromPoints(user.getInteger("ligapoints"));
+        final Liga newRank = getLigaFromPoints(user.getInteger("ligapoints") + amount);
+        final Liga oldRank = getLigaFromPoints(user.getInteger("ligapoints"));
 
         if(newRank.getId() > oldRank.getId())
             return true;
@@ -104,8 +102,8 @@ public class LigaManager {
     }
 
     public boolean checkForDerank(User user, int amount){
-        Liga newRank = getLigaFromPoints(user.getInteger("ligapoints") - amount);
-        Liga oldRank = getLigaFromPoints(user.getInteger("ligapoints"));
+        final Liga newRank = getLigaFromPoints(user.getInteger("ligapoints") - amount);
+        final Liga oldRank = getLigaFromPoints(user.getInteger("ligapoints"));
 
         if(newRank.getId() < oldRank.getId())
             return true;

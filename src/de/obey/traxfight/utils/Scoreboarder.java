@@ -11,9 +11,9 @@ package de.obey.traxfight.utils;
 import de.obey.traxfight.TraxFight;
 import de.obey.traxfight.commands.VanishCommand;
 import de.obey.traxfight.objects.Combat;
-import de.obey.traxfight.usermanager.Rang;
-import de.obey.traxfight.usermanager.User;
-import de.obey.traxfight.usermanager.UserManager;
+import de.obey.traxfight.backend.Rang;
+import de.obey.traxfight.backend.User;
+import de.obey.traxfight.backend.UserManager;
 import de.obey.utils.MathUtil;
 import net.minecraft.server.v1_8_R3.IChatBaseComponent;
 import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerListHeaderFooter;
@@ -51,7 +51,7 @@ public class Scoreboarder {
                     updateScoreboard(all);
                 }
             }
-        }.runTaskLater(traxFight, 10);
+        }.runTaskLater(traxFight, 20);
     }
 
     public void setPlayerListName(Player player){
@@ -65,8 +65,18 @@ public class Scoreboarder {
         if(rang == null)
             return;
 
-        if(player.getName().equalsIgnoreCase("superbrow15") || player.getName().equalsIgnoreCase("Coca369")){
-            player.setPlayerListName(rang.getTabPrefix() + player.getName() + rang.getTabSuffix() + " §3§l✦");
+        if(VanishCommand.vanished.contains(player)){
+            player.setPlayerListName("§f§o" + player.getName() + " §b§lVANISH");
+            return;
+        }
+
+        String donator = user.getString("tabsuffix");
+
+        if(donator == null)
+            donator = "§r";
+
+        if(!donator.equalsIgnoreCase("§r")){
+            player.setPlayerListName(rang.getTabPrefix() + player.getName() + rang.getTabSuffix() + " " + donator);
             return;
         }
 
@@ -248,55 +258,78 @@ public class Scoreboarder {
         }
 
         traxFight.getExecutorService().submit(() -> {
-            User user = traxFight.getUserManager().getUserFromPlayer(player);
-            String type = "normal";
+            try {
+                final User user = traxFight.getUserManager().getUserFromPlayer(player);
+                String type = "normal";
 
-            if(traxFight.getCombatManager().isInCombat(player))
-                type = "combat";
+                if(user == null || user.getRang() == null) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if(user.getPlayer() != null && user.getPlayer().isOnline())
+                                user.setRang(traxFight.getRangManager().getPlayerRang(user.getPlayer()));
 
-
-            if(type.equalsIgnoreCase("normal")) {
-
-                final Team rang = scoreboard.getTeam("rang");
-                rang.setPrefix("§7" + user.getRang().getRangNameColor());
-
-                final Team coins = scoreboard.getTeam("coins");
-                String coinString = MathUtil.getLongWithDots(user.getLong("coins"));
-
-                if (user.getLong("coins") > 1000000000)
-                    coinString = MathUtil.replaceLongWithSuffix(user.getLong("coins"));
-
-                coins.setPrefix("§7" + coinString);
-
-                final Team liga = scoreboard.getTeam("liga");
-                int elo = user.getInteger("ligapoints");
-                liga.setPrefix("§7" + traxFight.getLigaManager().getLigaFromPoints(elo).getPrefix());
-                liga.setSuffix(" §8(§a" + MathUtil.getLongWithDots(elo) + "§8)");
-
-                final Team stats = scoreboard.getTeam("stats");
-                stats.setPrefix("§a" + user.getInteger("kills") + "§8 / §c" + user.getInteger("deaths"));
-
-            } else if(type.equalsIgnoreCase("combat")){
-
-                final Combat combat = traxFight.getCombatManager().getPlayerCombat().get(player);
-
-                if(combat == null)
+                            updateScoreboard(player);
+                        }
+                    }.runTaskLater(traxFight, 20*5);
                     return;
+                }
 
-                Team gegner = scoreboard.getTeam("gegner");
-                gegner.setPrefix("§7" + combat.getOpponent().getName());
+                if (traxFight.getCombatManager().isInCombat(player))
+                    type = "combat";
 
-                Team dauer = scoreboard.getTeam("dauer");
-                dauer.setPrefix("§7" + combat.getDurationString());
 
-                Team remain = scoreboard.getTeam("remain");
-                remain.setPrefix("§7" + combat.getCooldown() + " s");
+                if (type.equalsIgnoreCase("normal")) {
 
+                    final Team rang = scoreboard.getTeam("rang");
+                    rang.setPrefix("§7" + user.getRang().getRangNameColor());
+
+                    final Team coins = scoreboard.getTeam("coins");
+                    String coinString = MathUtil.getLongWithDots(user.getLong("coins"));
+
+                    if (user.getLong("coins") > 1000000000)
+                        coinString = MathUtil.replaceLongWithSuffix(user.getLong("coins"));
+
+                    coins.setPrefix("§7" + coinString);
+
+                    final Team liga = scoreboard.getTeam("liga");
+                    int elo = user.getInteger("ligapoints");
+                    liga.setPrefix("§7" + traxFight.getLigaManager().getLigaFromPoints(elo).getPrefix());
+                    liga.setSuffix(" §8(§a" + MathUtil.getLongWithDots(elo) + "§8)");
+
+                    final Team stats = scoreboard.getTeam("stats");
+                    stats.setPrefix("§a" + user.getInteger("kills") + "§8 / §c" + user.getInteger("deaths"));
+
+                } else if (type.equalsIgnoreCase("combat")) {
+
+                    final Combat combat = traxFight.getCombatManager().getPlayerCombat().get(player);
+
+                    if (combat == null)
+                        return;
+
+                    final Team gegner = scoreboard.getTeam("gegner");
+                    gegner.setPrefix("§7" + combat.getOpponent().getName());
+
+                    final Team dauer = scoreboard.getTeam("dauer");
+                    dauer.setPrefix("§7" + combat.getDurationString());
+
+                    final Team remain = scoreboard.getTeam("remain");
+                    remain.setPrefix("§7" + combat.getCooldown() + " s");
+                }
+            }catch (Exception exception){
+                //player.sendMessage(traxFight.getPrefix() + "Ein Fehler ist aufgetreten, neuer Versuch in 5 Sekunden (SCOREBOARD)");
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if(player.isOnline())
+                            updateScoreboard(player);
+                    }
+                }.runTaskLater(traxFight, 20*5);
             }
         });
 
         if(!teams.containsKey(scoreboard)){
-            Map<Rang, Team> sip = new HashMap<>();
+            final Map<Rang, Team> sip = new HashMap<>();
 
             for (Rang rang : traxFight.getRangManager().getRangMap().values()) {
                 sip.put(rang, getTeam(scoreboard, rang.getRangId() + "", rang.getOverNamePrefix(), rang.getOverNameSuffix()));
@@ -306,7 +339,7 @@ public class Scoreboarder {
         }
 
         for (Player all : Bukkit.getOnlinePlayers()) {
-            Rang rang = traxFight.getRangManager().getPlayerRang(all);
+            final Rang rang = traxFight.getRangManager().getPlayerRang(all);
 
             if (rang == null)
                 return;
@@ -318,11 +351,14 @@ public class Scoreboarder {
 
     private Team getTeam(org.bukkit.scoreboard.Scoreboard board, String Team, String prefix, String suffix) {
         Team team = board.getTeam(Team);
+
         if (team == null) {
             team = board.registerNewTeam(Team);
         }
+
         team.setPrefix(prefix);
         team.setSuffix(suffix);
+
         return team;
     }
 

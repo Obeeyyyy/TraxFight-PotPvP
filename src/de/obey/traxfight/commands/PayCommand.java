@@ -4,7 +4,7 @@ package de.obey.traxfight.commands;
 
         (TraxFight-PotPvP)
   This Class was created by Obey
-        25.02.2021 | 20:52
+        12.03.2021 | 12:36
 
 */
 
@@ -18,7 +18,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class BountyCommand implements CommandExecutor {
+public class PayCommand implements CommandExecutor {
 
     private final TraxFight traxFight = TraxFight.getInstance();
 
@@ -28,7 +28,7 @@ public class BountyCommand implements CommandExecutor {
             final Player player =(Player) sender;
 
             if(args.length != 2){
-                player.sendMessage(traxFight.getPrefix() + "/bounty <spieler> <münzen>");
+                player.sendMessage(traxFight.getPrefix() + "/pay <spieler> <betrag>");
                 return false;
             }
 
@@ -37,8 +37,8 @@ public class BountyCommand implements CommandExecutor {
             if(!traxFight.isOnline(player, target, args[0]))
                 return false;
 
-            if(target == player){
-                player.sendMessage(traxFight.getPrefix() + "Du kannst deinen Kopf nicht aufs Spiel setzen.");
+            if(target == player) {
+                player.sendMessage(traxFight.getPrefix() + "Lügen darf man nicht sagen.");
                 return false;
             }
 
@@ -50,28 +50,23 @@ public class BountyCommand implements CommandExecutor {
                     return false;
                 }
 
-                final User playerUser = traxFight.getUserManager().getUserFromPlayer(player);
+                final User user = traxFight.getUserManager().getUserFromPlayer(player);
                 final User targetUser = traxFight.getUserManager().getUserFromPlayer(target);
 
-                if(!traxFight.hasEnoughtLong(playerUser, "coins", amount))
+                if(!traxFight.hasEnoughtLong(user, "coins", amount))
                     return false;
 
-                playerUser.removeLong("coins", amount);
-                targetUser.addLong("bounty", amount);
+                user.removeLong("coins", amount);
+                targetUser.addLong("coins", amount);
 
-                player.playSound(player.getLocation(), Sound.WITHER_DEATH, 0.4f, 0.4f);
-                target.playSound(target.getLocation(), Sound.WITHER_DEATH, 0.4f, 0.4f);
+                player.sendMessage(traxFight.getPrefix() + "Du hast §a" + MathUtil.getLongWithDots(amount) + "§7 Münzen an §a" + target.getName() + "§7 überwiesen.");
+                target.sendMessage(traxFight.getPrefix() + "§a" + player.getName() + "§7 hat dir §a" + MathUtil.getLongWithDots(amount) + "§7 Münzen überwiesen.");
 
-                if(amount > 75000){
-                    Bukkit.broadcastMessage(traxFight.getPrefix() + player.getName() + "hat §a" + MathUtil.getLongWithDots(amount) + "§7 Münzen auf den Kopf von §a" + target.getName() + "§7 gesetzt.");
-                    return false;
-                }
+                player.playSound(player.getLocation(), Sound.VILLAGER_NO, 0.4f, 0.4f);
+                target.playSound(target.getLocation(), Sound.VILLAGER_YES, 0.4f, 0.4f);
 
-                player.sendMessage(traxFight.getPrefix() + "Du hast §a" + MathUtil.getLongWithDots(amount) + "§7 Münzen auf den Kopf von §a" + target.getName() + "§7 gesetzt.");
-                target.sendMessage(traxFight.getPrefix() + player.getName() + " hat §a" + MathUtil.getLongWithDots(amount) + "§7 Münzen auf deinen Kopf gesetzt.");
             }catch (NumberFormatException exception){
                 player.sendMessage(traxFight.getPrefix() + "Bitte gebe eine Zahl an.");
-                return false;
             }
         }
         return false;
